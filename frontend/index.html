@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Job Verification Portal</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  :root {
+    --ink: #1a1f2b;
+    --paper: #eef0f2;
+    --line: #ccd2d9;
+    --accent: #1e5f8c;
+    --danger: #b8412e;
+    --ok: #29734a;
+    --mono: 'Courier New', Courier, monospace;
+    --serif: Georgia, 'Times New Roman', serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--serif); line-height: 1.5; }
+  header { padding: 32px 24px 20px; border-bottom: 2px solid var(--ink); }
+  header .eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); }
+  header h1 { margin: 4px 0 0; font-size: 30px; font-weight: 400; }
+  header p { margin: 8px 0 0; max-width: 62ch; font-size: 14px; color: #454c56; }
+  main { max-width: 950px; margin: 0 auto; padding: 24px; }
+  .tabs { display: flex; gap: 2px; margin-bottom: 0; }
+  .tab { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; padding: 10px 16px; background: #dfe3e7; cursor: pointer; border: 1px solid var(--line); border-bottom: none; }
+  .tab.active { background: #f7f8f9; font-weight: bold; color: var(--accent); }
+  .panel { display: none; border: 1px solid var(--line); background: #f7f8f9; padding: 20px; margin-bottom: 24px; }
+  .panel.active { display: block; }
+  section { border: 1px solid var(--line); background: #f7f8f9; padding: 20px; margin-bottom: 24px; }
+  section h2 { font-family: var(--mono); font-size: 13px; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 16px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+  label { display: block; font-family: var(--mono); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 4px; color: #454c56; }
+  input[type=text], input[type=file], input[type=number] { width: 100%; padding: 8px; border: 1px solid var(--line); background: #fff; font-family: var(--serif); font-size: 14px; margin-bottom: 14px; }
+  button { font-family: var(--mono); font-size: 12px; text-transform: uppercase; letter-spacing: .05em; padding: 10px 18px; background: var(--ink); color: #fff; border: none; cursor: pointer; }
+  button:hover { background: var(--accent); }
+  button.danger { background: var(--danger); }
+  .row { display: flex; gap: 24px; flex-wrap: wrap; }
+  .row > div { flex: 1; min-width: 220px; }
+  .verdict-box { padding: 16px; text-align: center; margin: 16px 0; font-family: var(--mono); font-size: 16px; text-transform: uppercase; letter-spacing: .05em; }
+  .verdict-match { background: #dff0e2; color: var(--ok); border: 1px solid var(--ok); }
+  .verdict-discrepancy { background: #f6dcd6; color: var(--danger); border: 1px solid var(--danger); }
+  .diff-item { border: 1px solid var(--line); margin-bottom: 10px; background: #fff; }
+  .diff-header { font-family: var(--mono); font-size: 11px; text-transform: uppercase; padding: 6px 10px; background: #ede2d0; color: #6b4a1f; }
+  .diff-header.removed { background: #f6dcd6; color: var(--danger); }
+  .diff-header.added { background: #dbe8f2; color: var(--accent); }
+  .diff-body { padding: 10px; font-size: 13px; }
+  .diff-body .orig { color: var(--danger); text-decoration: line-through; margin-bottom: 4px; }
+  .diff-body .sub { color: var(--ok); }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid var(--line); }
+  th { font-family: var(--mono); font-size: 11px; text-transform: uppercase; }
+  .status-ok { color: var(--ok); font-family: var(--mono); }
+  .status-bad { color: var(--danger); font-family: var(--mono); font-weight: bold; }
+  .muted { color: #6a7079; font-size: 12px; }
+  select { width: 100%; padding: 8px; border: 1px solid var(--line); font-family: var(--serif); font-size: 14px; margin-bottom: 14px; background: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">Documents Verification Portal</div>
+  <h1>Verify the employee Documents</h1>
+  <p>Company A registers an employee's original record once, locked into a hash chain. Company B verifies whatever document a candidate submits against that original — and sees exactly what, if anything, was changed.</p>
+</header>
+
+<main>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="issue">Company A — Issue record</div>
+    <div class="tab" data-tab="verify">Company B — Verify candidate</div>
+    <div class="tab" data-tab="integrity">Record integrity</div>
+  </div>
+
+  <div class="panel active" id="issue">
+    <section style="border-top:none; margin-bottom:0;">
+      <h2>Register an original record</h2>
+      <p class="muted">Simulates Company A issuing a document at the time of employment. This becomes the locked source of truth.</p>
+      <form id="issueForm">
+        <div class="row">
+          <div><label>Employee name</label><input type="text" id="empName" placeholder="e.g. Garv Ahuja" required></div>
+          <div><label>Employer name (this company)</label><input type="text" id="employerName" placeholder="e.g. Company A Pvt Ltd" required></div>
+        </div>
+        <div class="row">
+          <div>
+            <label>Document type</label>
+            <select id="docType">
+              <option>Experience Letter</option>
+              <option>Offer Letter</option>
+              <option>Relieving Letter</option>
+              <option>Salary Certificate</option>
+            </select>
+          </div>
+          <div><label>Original document file</label><input type="file" id="issueFile" required></div>
+        </div>
+        <button type="submit">Register original record</button>
+      </form>
+      <div id="issueResult" style="margin-top:16px;"></div>
+    </section>
+  </div>
+
+  <div class="panel" id="verify">
+    <section style="border-top:none; margin-bottom:0;">
+      <h2>Find a candidate's original record</h2>
+      <div class="row">
+        <div><label>Search by employee name</label><input type="text" id="searchName" placeholder="e.g. Yash"></div>
+        <div style="display:flex; align-items:flex-end;"><button id="searchBtn">Search</button></div>
+      </div>
+      <div id="searchResults" class="muted">Search to see matching records.</div>
+    </section>
+
+    <section>
+      <h2>Verify submitted document against a record</h2>
+      <form id="verifyForm">
+        <div class="row">
+          <div><label>Original record ID (from search above)</label><input type="number" id="recordId" placeholder="e.g. 1" required></div>
+          <div><label>Checked by (your company/name)</label><input type="text" id="checkedBy" placeholder="e.g. Company B - HR" required></div>
+        </div>
+        <label>Document candidate submitted</label>
+        <input type="file" id="verifyFile" required>
+        <button type="submit">Run verification</button>
+      </form>
+      <div id="verifyResult" style="margin-top:16px;"></div>
+    </section>
+
+    <section>
+      <h2>Verification history</h2>
+      <div id="historyList" class="muted">Loading…</div>
+    </section>
+  </div>
+
+  <div class="panel" id="integrity">
+    <section style="border-top:none; margin-bottom:0;">
+      <h2>Verify original-record chain integrity</h2>
+      <p class="muted">Confirms no original record has been silently edited since it was issued — including by the issuing company itself.</p>
+      <button id="verifyChainBtn">Verify entire chain</button>
+      <div id="chainResult" style="margin-top:14px;"></div>
+
+      <hr style="margin:20px 0; border:none; border-top:1px solid var(--line);">
+      <p class="muted"><strong>Demo mode:</strong> directly edit a record's document type to prove the chain catches it.</p>
+      <div class="row">
+        <div><label>Record ID</label><input type="number" id="tamperId" placeholder="e.g. 1"></div>
+        <div><label>New (fake) document type</label><input type="text" id="tamperType" placeholder="e.g. Senior Software Engineer Letter"></div>
+      </div>
+      <button class="danger" id="tamperBtn">Tamper with this record</button>
+    </section>
+  </div>
+
+</main>
+
+<script>
+const API = "http://127.0.0.1:8000";
+
+document.querySelectorAll(".tab").forEach(tab => {
+  tab.addEventListener("click", () => {
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+    document.querySelectorAll(".panel").forEach(p => p.classList.remove("active"));
+    tab.classList.add("active");
+    document.getElementById(tab.dataset.tab).classList.add("active");
+  });
+});
+
+document.getElementById("issueForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData();
+  fd.append("employee_name", document.getElementById("empName").value);
+  fd.append("employer_name", document.getElementById("employerName").value);
+  fd.append("document_type", document.getElementById("docType").value);
+  fd.append("file", document.getElementById("issueFile").files[0]);
+  const res = await fetch(`${API}/records/register`, { method: "POST", body: fd });
+  const div = document.getElementById("issueResult");
+  if (!res.ok) { div.innerHTML = `<p class="status-bad">Error: ${await res.text()}</p>`; return; }
+  const data = await res.json();
+  div.innerHTML = `<p class="status-ok">✓ Record #${data.record_id} registered for ${data.employee_name} at ${data.employer_name}.</p>
+    <div class="muted" style="font-family:var(--mono); word-break:break-all;">hash: ${data.record_hash}</div>`;
+  e.target.reset();
+});
+
+document.getElementById("searchBtn").addEventListener("click", async () => {
+  const name = document.getElementById("searchName").value;
+  const res = await fetch(`${API}/records/search?employee_name=${encodeURIComponent(name)}`);
+  const data = await res.json();
+  const div = document.getElementById("searchResults");
+  if (!data.length) { div.innerHTML = "<p class='muted'>No matching records found.</p>"; return; }
+  div.innerHTML = `<table>
+    <tr><th>Record ID</th><th>Employee</th><th>Employer</th><th>Type</th><th>File</th></tr>
+    ${data.map(r => `<tr><td>${r.record_id}</td><td>${r.employee_name}</td><td>${r.employer_name}</td><td>${r.document_type}</td><td>${r.filename}</td></tr>`).join("")}
+  </table>`;
+});
+
+document.getElementById("verifyForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const fd = new FormData();
+  fd.append("record_id", document.getElementById("recordId").value);
+  fd.append("checked_by", document.getElementById("checkedBy").value);
+  fd.append("file", document.getElementById("verifyFile").files[0]);
+  const div = document.getElementById("verifyResult");
+  div.innerHTML = "<p class='muted'>Comparing…</p>";
+  const res = await fetch(`${API}/verify`, { method: "POST", body: fd });
+  if (!res.ok) { div.innerHTML = `<p class="status-bad">Error: ${await res.text()}</p>`; return; }
+  const data = await res.json();
+
+  const verdictClass = data.verdict === "MATCH" ? "verdict-match" : "verdict-discrepancy";
+  const verdictText = data.verdict === "MATCH" ? "✓ Document matches original" : "✗ Discrepancy found";
+
+  let diffsHtml = data.differences.length ? data.differences.map(d => {
+    let headerClass = d.type === "MODIFIED" ? "" : d.type === "REMOVED_FROM_ORIGINAL" ? "removed" : "added";
+    let body = "";
+    if (d.original) body += `<div class="orig">Original: "${d.original}"</div>`;
+    if (d.submitted) body += `<div class="sub">Submitted: "${d.submitted}"</div>`;
+    return `<div class="diff-item"><div class="diff-header ${headerClass}">${d.type.replace(/_/g," ")}</div><div class="diff-body">${body}</div></div>`;
+  }).join("") : "<p class='muted'>No differences detected.</p>";
+
+  div.innerHTML = `
+    <div class="verdict-box ${verdictClass}">${verdictText} — ${data.match_percentage}% match</div>
+    <p><strong>${data.employee_name}</strong> — claimed record: ${data.document_type} at ${data.employer_name}</p>
+    <h3 style="font-family:var(--mono); font-size:12px; text-transform:uppercase;">Differences found</h3>
+    ${diffsHtml}
+  `;
+  loadHistory();
+});
+
+async function loadHistory() {
+  const res = await fetch(`${API}/verify/history`);
+  const data = await res.json();
+  const div = document.getElementById("historyList");
+  if (!data.length) { div.innerHTML = "<p class='muted'>No checks yet.</p>"; return; }
+  div.innerHTML = `<table>
+    <tr><th>ID</th><th>Employee</th><th>File</th><th>Match %</th><th>Verdict</th><th>Checked by</th><th>When</th></tr>
+    ${data.map(c => `<tr>
+      <td>${c.check_id}</td><td>${c.employee_name}</td><td>${c.submitted_filename}</td>
+      <td>${c.match_percentage}%</td>
+      <td class="${c.verdict === 'MATCH' ? 'status-ok' : 'status-bad'}">${c.verdict}</td>
+      <td>${c.checked_by}</td><td>${new Date(c.checked_at).toLocaleString()}</td>
+    </tr>`).join("")}
+  </table>`;
+}
+
+document.getElementById("verifyChainBtn").addEventListener("click", async () => {
+  const res = await fetch(`${API}/records/verify-chain`);
+  const data = await res.json();
+  const div = document.getElementById("chainResult");
+  div.innerHTML = data.valid
+    ? `<p class="status-ok">✓ Chain valid — ${data.records_checked} records checked, no tampering detected.</p>`
+    : `<p class="status-bad">✗ CHAIN BROKEN at record ${data.broken_at_record_id}<br><span class="muted">${data.reason}</span></p>`;
+});
+
+document.getElementById("tamperBtn").addEventListener("click", async () => {
+  const id = document.getElementById("tamperId").value;
+  const type = document.getElementById("tamperType").value;
+  if (!id || !type) { alert("Enter a record ID and a fake document type."); return; }
+  const res = await fetch(`${API}/demo/tamper-record/${id}?new_document_type=${encodeURIComponent(type)}`, { method: "POST" });
+  const data = await res.json();
+  alert(data.message || JSON.stringify(data));
+});
+
+loadHistory();
+</script>
+
+</body>
+</html>
