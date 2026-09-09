@@ -1,8 +1,8 @@
 # Provenance — Document Verification System
 
-A document verification system built with **Python and FastAPI** that detects whether a submitted document has been modified from its original registered version.
+A document verification system built wit Python and FastAPI that detects whether a submitted document has been modified from its original registered version.
 
-It can be used for verifying documents such as **experience letters, certificates, and employment records**.
+It can be used for verifying documents such as experience letters, certificates, and employment records.
 
 ## Features
 
@@ -12,7 +12,7 @@ It can be used for verifying documents such as **experience letters, certificate
 * Calculate document similarity
 * Show exact differences
 * Store original records securely
-* Detect tampering using **SHA-256 hash chaining**
+* Detect tampering using : SHA-256 hash chaining
 
 ## Tech Stack
 
@@ -50,7 +50,7 @@ doc-verify/
 
 ## Note
 
-This system detects modifications compared to a **known original record**. It does not independently verify whether the original document was truthful when it was issued.
+This system detects modifications compared to a known original record. It does not independently verify whether the original document was truthful when it was issued.
 
 ## Author
 
